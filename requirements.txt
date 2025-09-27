@@ -1,9 +1,7 @@
-moviepy==1.0.3
-openai-whisper
-transformers
-torch
-tiktoken
-ffmpeg-python
 streamlit
+moviepy
+imageio-ffmpeg
 reportlab
-
+transformers
+openai-whisper
+sentence-transformers
