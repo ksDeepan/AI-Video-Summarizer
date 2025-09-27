@@ -6,3 +6,4 @@ transformers
 openai-whisper
 sentence-transformers
 torch
+reportlab==4.2.5
