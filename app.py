@@ -6,22 +6,17 @@ import tempfile
 from pathlib import Path
 from io import BytesIO
 
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 import moviepy.editor as mp
 import imageio_ffmpeg
 from utils import get_whisper_model, get_summarizer
 
-# PDF generation
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 
 # === ✅ Setup ffmpeg ===
 ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
-temp_ffmpeg_alias = Path(tempfile.gettempdir()) / "ffmpeg.exe"
-if not temp_ffmpeg_alias.exists():
-    shutil.copy(ffmpeg_exe, temp_ffmpeg_alias)
-os.environ["PATH"] = str(temp_ffmpeg_alias.parent) + os.pathsep + os.environ["PATH"]
+os.environ["PATH"] = str(Path(ffmpeg_exe).parent) + os.pathsep + os.environ["PATH"]
 
-# === ✅ Verify ffmpeg is available ===
 print("🔍 Checking ffmpeg path...")
 if shutil.which("ffmpeg"):
     print(f"✅ ffmpeg found at: {shutil.which('ffmpeg')}")
@@ -29,7 +24,6 @@ else:
     print("❌ ffmpeg not found. Aborting.")
     sys.exit(1)
 
-# Test ffmpeg
 try:
     result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True, check=True)
     print("✅ ffmpeg is working in Python!")
@@ -37,6 +31,7 @@ try:
 except Exception as e:
     print(f"❌ ffmpeg failed to run: {e}")
     sys.exit(1)
+
 
 # === Paths ===
 INPUT_VIDEO = "inputs/sample.mp4"
@@ -48,6 +43,7 @@ TRANSCRIPT_FILE = OUTPUT_DIR / "transcript.txt"
 SUMMARY_FILE = OUTPUT_DIR / "summary.txt"
 PDF_FILE = OUTPUT_DIR / "video_summary_report.pdf"
 
+
 # === 🔊 Audio Extraction ===
 def extract_audio(video_path, audio_path):
     print(f"🎧 Extracting audio from: {video_path}")
@@ -56,11 +52,15 @@ def extract_audio(video_path, audio_path):
         sys.exit(1)
     try:
         video = mp.VideoFileClip(str(video_path))
+        if video.audio is None:
+            print("❌ No audio track found in video.")
+            sys.exit(1)
         video.audio.write_audiofile(str(audio_path))
     except Exception as e:
         print(f"❌ Audio extraction failed: {e}")
         sys.exit(1)
     return audio_path
+
 
 # === 🧾 PDF Generation ===
 def generate_pdf(transcript, summary, pdf_path):
@@ -108,9 +108,9 @@ def generate_pdf(transcript, summary, pdf_path):
     c.save()
     buffer.seek(0)
 
-    # Write to disk
     with open(pdf_path, "wb") as f:
         f.write(buffer.read())
+
 
 # === 🚀 Main Pipeline ===
 def main():
@@ -161,11 +161,11 @@ def main():
         print(f"❌ Failed to create PDF: {e}")
         sys.exit(1)
 
-    # ✅ Done
     print("\n✅ All done!")
     print(f"📄 Transcript: {TRANSCRIPT_FILE}")
     print(f"📄 Summary:   {SUMMARY_FILE}")
     print(f"📄 PDF Report:{PDF_FILE}")
+
 
 if __name__ == "__main__":
     main()

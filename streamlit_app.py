@@ -13,12 +13,10 @@ from utils import get_whisper_model, get_summarizer
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
-# === ✅ Ensure ffmpeg is available ===
+
+# === ✅ Ensure ffmpeg is available (cross-platform) ===
 ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
-temp_ffmpeg_path = Path(tempfile.gettempdir()) / "ffmpeg.exe"
-if not temp_ffmpeg_path.exists():
-    shutil.copy(ffmpeg_exe, temp_ffmpeg_path)
-os.environ["PATH"] = str(temp_ffmpeg_path.parent) + os.pathsep + os.environ.get("PATH", "")
+os.environ["PATH"] = str(Path(ffmpeg_exe).parent) + os.pathsep + os.environ.get("PATH", "")
 
 # === 🗂️ Output directory ===
 OUTPUT_DIR = Path("outputs")
@@ -45,7 +43,11 @@ if uploaded_file:
     st.write("🎧 Extracting audio...")
     try:
         video = mp.VideoFileClip(str(video_path))
+        if video.audio is None:
+            st.error("❌ This video has no audio track.")
+            st.stop()
         video.audio.write_audiofile(str(audio_path))
+        video.close()
         st.success("✅ Audio extracted successfully.")
     except Exception as e:
         st.error(f"❌ Failed to extract audio: {e}")
@@ -78,7 +80,7 @@ if uploaded_file:
         with open(OUTPUT_DIR / "summary.txt", "w", encoding="utf-8") as f:
             f.write(summary)
         st.subheader("📝 Summary")
-        st.success(summary)
+        st.text_area("Summary", summary, height=200)
     except Exception as e:
         st.error(f"❌ Summarization failed: {e}")
         st.stop()
@@ -93,7 +95,7 @@ if uploaded_file:
 
         # Title
         p.setFont("Helvetica-Bold", 16)
-        p.drawString(x_margin, y, "🎬 Video Summary Report")
+        p.drawString(x_margin, y, "Video Summary Report")
         y -= 30
 
         # Transcript
