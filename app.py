@@ -2,7 +2,6 @@ import os
 import sys
 import shutil
 import subprocess
-import tempfile
 from pathlib import Path
 from io import BytesIO
 
@@ -15,7 +14,7 @@ from utils import get_whisper_model, get_summarizer
 
 # === ✅ Setup ffmpeg ===
 ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
-os.environ["PATH"] = str(Path(ffmpeg_exe).parent) + os.pathsep + os.environ["PATH"]
+os.environ["PATH"] = str(Path(ffmpeg_exe).parent) + os.pathsep + os.environ.get("PATH", "")
 
 print("🔍 Checking ffmpeg path...")
 if shutil.which("ffmpeg"):
@@ -56,6 +55,7 @@ def extract_audio(video_path, audio_path):
             print("❌ No audio track found in video.")
             sys.exit(1)
         video.audio.write_audiofile(str(audio_path))
+        video.close()
     except Exception as e:
         print(f"❌ Audio extraction failed: {e}")
         sys.exit(1)
@@ -73,6 +73,7 @@ def generate_pdf(transcript, summary, pdf_path):
     c.drawString(x, y, "🎬 Video Summary Report")
     y -= 40
 
+    # Transcript Section
     c.setFont("Helvetica-Bold", 12)
     c.drawString(x, y, "Transcript:")
     y -= 20
@@ -91,6 +92,7 @@ def generate_pdf(transcript, summary, pdf_path):
         c.showPage()
         y = height - 50
 
+    # Summary Section
     c.setFont("Helvetica-Bold", 12)
     c.drawString(x, y, "Summary:")
     y -= 20
@@ -135,16 +137,29 @@ def main():
     with open(TRANSCRIPT_FILE, "w", encoding="utf-8") as f:
         f.write(transcript)
 
-    # 3. Summarize
+    # 3. Summarize (with chunking for long transcripts)
     print("🧠 Generating summary...")
     summarizer = get_summarizer()
+
+    def chunk_text(text, max_tokens=800):
+        words = text.split()
+        for i in range(0, len(words), max_tokens):
+            yield " ".join(words[i:i+max_tokens])
+
     try:
-        summary = summarizer(
-            transcript,
-            max_length=100,
-            min_length=30,
-            do_sample=False
-        )[0]["summary_text"]
+        chunks = list(chunk_text(transcript, max_tokens=800))
+        summaries = []
+        for i, chunk in enumerate(chunks, 1):
+            print(f"🔹 Summarizing chunk {i}/{len(chunks)}...")
+            part_summary = summarizer(
+                chunk,
+                max_length=100,
+                min_length=30,
+                do_sample=False
+            )[0]["summary_text"]
+            summaries.append(part_summary)
+
+        summary = " ".join(summaries)
     except Exception as e:
         print(f"❌ Summarization failed: {e}")
         sys.exit(1)
@@ -162,8 +177,8 @@ def main():
         sys.exit(1)
 
     print("\n✅ All done!")
-    print(f"📄 Transcript: {TRANSCRIPT_FILE}")
-    print(f"📄 Summary:   {SUMMARY_FILE}")
+    print(f"📜 Transcript: {TRANSCRIPT_FILE}")
+    print(f"📝 Summary:   {SUMMARY_FILE}")
     print(f"📄 PDF Report:{PDF_FILE}")
 
 
