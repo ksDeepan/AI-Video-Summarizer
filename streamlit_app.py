@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from io import BytesIO
 
@@ -15,6 +16,11 @@ from reportlab.pdfgen import canvas
 # === ✅ Ensure ffmpeg is available (cross-platform) ===
 ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
 os.environ["PATH"] = str(Path(ffmpeg_exe).parent) + os.pathsep + os.environ.get("PATH", "")
+
+# 🚨 Check if ffmpeg is available
+if not shutil.which("ffmpeg"):
+    st.error("❌ ffmpeg not found! Please install it (check packages.txt on Streamlit Cloud).")
+    st.stop()
 
 # === 🗂️ Output directory ===
 OUTPUT_DIR = Path("outputs")
