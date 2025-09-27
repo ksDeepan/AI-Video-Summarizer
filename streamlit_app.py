@@ -1,6 +1,4 @@
 import os
-import shutil
-import tempfile
 from pathlib import Path
 from io import BytesIO
 
@@ -67,18 +65,33 @@ if uploaded_file:
         st.error(f"❌ Transcription failed: {e}")
         st.stop()
 
-    # 🧠 Summarize
+    # 🧠 Summarize (with chunking for long transcripts)
     st.write("🧠 Generating summary...")
     summarizer = get_summarizer()
+
+    def chunk_text(text, max_tokens=800):
+        words = text.split()
+        for i in range(0, len(words), max_tokens):
+            yield " ".join(words[i:i+max_tokens])
+
     try:
-        summary = summarizer(
-            transcript,
-            max_length=100,
-            min_length=30,
-            do_sample=False
-        )[0]["summary_text"]
+        chunks = list(chunk_text(transcript, max_tokens=800))
+        summaries = []
+        for i, chunk in enumerate(chunks, 1):
+            st.write(f"🔹 Summarizing chunk {i}/{len(chunks)}...")
+            part_summary = summarizer(
+                chunk,
+                max_length=100,
+                min_length=30,
+                do_sample=False
+            )[0]["summary_text"]
+            summaries.append(part_summary)
+
+        summary = " ".join(summaries)
+
         with open(OUTPUT_DIR / "summary.txt", "w", encoding="utf-8") as f:
             f.write(summary)
+
         st.subheader("📝 Summary")
         st.text_area("Summary", summary, height=200)
     except Exception as e:
