@@ -1,23 +1,36 @@
-# 🎬 AI Video Summarizer (Whisper + Transformers)
+# 🎬 AI Video Summarizer  
+> 📹 Extract ➝ 📝 Transcribe ➝ 🧠 Summarize ➝ 📄 Export  
 
-This project automatically extracts audio from videos, transcribes speech into text using [OpenAI Whisper](https://github.com/openai/whisper), and generates concise summaries using Hugging Face [Transformers](https://huggingface.co/transformers/).  
-It also exports results into a **PDF report**.
+AI-powered tool that **summarizes long videos into concise reports**.  
+It uses **OpenAI Whisper** for transcription and **Hugging Face Transformers** for summarization.  
+Results can be exported as **PDF, transcript, or summary text files**.  
 
 ---
 
 ## ✨ Features
-- 📤 Upload a video (`.mp4`, `.mov`, `.avi`)
-- 🎧 Extracts audio automatically
-- 📝 Transcribes speech → text (using Whisper)
-- 🧠 Summarizes transcript (using Transformers)
-- 📄 Exports a professional PDF report
-- ⬇️ Download transcript & summary as `.txt`
+- 📤 Upload video files (`.mp4`, `.mov`, `.avi`)  
+- 🎧 Automatic audio extraction  
+- 📝 Whisper ASR (speech → text)  
+- 🧠 Abstractive summarization with Transformers  
+- 📄 Export as PDF or TXT  
+- ⬇️ Download transcript & summary  
 
 ---
 
-## ⚡ Installation (Run Locally)
+## 🚀 Installation & Usage
 
-1. Clone the repo:
-   ```bash
-   git clone https://github.com/ksDeepan/AI-Video-Summarizer.git
-   cd AI-Video-Summarizer
+```bash
+# Clone repository
+git clone <your-repo-url>
+cd AI-Video-Summarizer
+
+# Create virtual environment
+python -m venv venv
+venv\Scripts\activate      # Windows
+source venv/bin/activate   # Mac/Linux
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run Streamlit app
+streamlit run streamlit_app.py
