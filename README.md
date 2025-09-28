@@ -19,7 +19,6 @@ Results can be exported as **PDF, transcript, or summary text files**.
 
 ## 🛠️ Tech Stack & 📜 Workflow
 
-```text
 🛠️ Tech Stack
 --------------
 - Streamlit – UI framework
