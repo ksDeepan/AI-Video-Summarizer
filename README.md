@@ -17,20 +17,22 @@ Results can be exported as **PDF, transcript, or summary text files**.
 
 ---
 
-## 🚀 Installation & Usage
+## 🛠️ Tech Stack & 📜 Workflow
 
-```bash
-# Clone repository
-git clone <your-repo-url>
-cd AI-Video-Summarizer
+```text
+🛠️ Tech Stack
+--------------
+- Streamlit – UI framework
+- MoviePy – video/audio processing
+- OpenAI Whisper – transcription
+- Transformers – summarization
+- ReportLab – PDF generation
 
-# Create virtual environment
-python -m venv venv
-venv\Scripts\activate      # Windows
-source venv/bin/activate   # Mac/Linux
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Run Streamlit app
-streamlit run streamlit_app.py
+📜 Workflow
+-----------
+1. Upload a video
+2. Audio is extracted automatically
+3. Transcript is generated with Whisper
+4. Summary is created with Transformers
+5. Download Transcript, Summary, and PDF report
